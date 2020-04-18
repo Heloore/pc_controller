@@ -3,11 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:pc_controll/modules/input_card.dart';
 import 'package:pc_controll/modules/pc_controlls_card.dart';
 import 'package:pc_controll/modules/settings_card.dart';
-import 'package:pc_controll/modules/volume_card.dart';
+import 'package:pc_controll/repository/repository.dart';
+
+import 'modules/volume/screen/volume_card.dart';
 
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
+  static final myTabbedPageKey = GlobalKey<_MyHomePageState>();
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -16,7 +19,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       debugShowCheckedModeBanner: false,
-      home: MyHomePage(),
+      home: MyHomePage(key: myTabbedPageKey),
     );
   }
 }
@@ -29,28 +32,51 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  final PageController pageController = PageController();
+  Repository repository = Repository();
   int _currentIndex = 0;
-  PageController _pageController;
-
-  @override
-  void initState() {
-    super.initState();
-    _pageController = PageController();
-  }
 
   @override
   void dispose() {
-    _pageController.dispose();
+    pageController.dispose();
     super.dispose();
+  }
+
+  animateToPage(int page) {
+    _currentIndex = page;
+    pageController.animateToPage(
+      page,
+      duration: Duration(milliseconds: 200),
+      curve: Curves.easeIn,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Nav Bar")),
+      appBar: AppBar(
+        title: Text("Nav Bar"),
+        actions: _currentIndex == 3
+            ? <Widget>[
+                IconButton(
+                  icon: Icon(Icons.language),
+                  onPressed: () {
+                    print("lang");
+                  },
+                ),
+                IconButton(
+                  icon: Icon(Icons.help),
+                  onPressed: () {
+                    print("help");
+                  },
+                ),
+              ]
+            : null,
+      ),
+      resizeToAvoidBottomPadding: false,
       body: SizedBox.expand(
         child: PageView(
-          controller: _pageController,
+          controller: pageController,
           onPageChanged: (index) {
             setState(() => _currentIndex = index);
           },
@@ -63,18 +89,14 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       bottomNavigationBar: BottomNavyBar(
+        key: MyApp.myTabbedPageKey,
         selectedIndex: _currentIndex,
-        onItemSelected: (int index) {
-          _currentIndex = index;
-          _pageController.jumpToPage(index);
-        },
+        onItemSelected: animateToPage,
         items: <BottomNavyBarItem>[
           BottomNavyBarItem(title: Text('Volume'), icon: Icon(Icons.volume_up)),
           BottomNavyBarItem(title: Text('Input'), icon: Icon(Icons.mouse)),
-          BottomNavyBarItem(
-              title: Text('PC contolls'), icon: Icon(Icons.computer)),
-          BottomNavyBarItem(
-              title: Text('Settings'), icon: Icon(Icons.settings)),
+          BottomNavyBarItem(title: Text('PC contolls'), icon: Icon(Icons.computer)),
+          BottomNavyBarItem(title: Text('Settings'), icon: Icon(Icons.settings)),
         ],
       ),
     );
