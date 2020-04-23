@@ -29,9 +29,6 @@ class UnmuteVolumeRequest extends Request {
 
   @override
   String path = "/unmute_volume";
-
-  @override
-  Map<String, String> queryParams;
 }
 
 class SetVolumeRequest extends Request {

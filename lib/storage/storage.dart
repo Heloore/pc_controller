@@ -2,11 +2,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 const sharedPrefsIPKey = "pc_controller_ip_address";
 
-class Repository {
-  static final Repository _repository = Repository._();
+class Storage {
+  static final Storage _storage = Storage._();
 
-  factory Repository() => _repository;
-  Repository._();
+  factory Storage() => _storage;
+  Storage._();
 
   Future<String> getSavedIpAddress() async {
     SharedPreferences sPrefs = await SharedPreferences.getInstance();

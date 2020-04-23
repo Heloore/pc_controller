@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:keyboard_visibility/keyboard_visibility.dart';
-import 'package:pc_controll/modules/touch_pad.dart';
-import 'package:pc_controll/modules/widgets/controlls_buttons.dart';
+import 'package:pc_controll/modules/input/widgets/controlls_buttons.dart';
+import 'package:pc_controll/modules/input/widgets/touch_pad.dart';
 
 class InputCard extends StatefulWidget {
   @override

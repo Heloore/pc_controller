@@ -1,15 +1,14 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:outline_material_icons/outline_material_icons.dart';
 
-class PCControllsCard extends StatefulWidget {
+class SystemControllsCard extends StatefulWidget {
   @override
-  _PCControllsCardState createState() => _PCControllsCardState();
+  _SystemControllsCardState createState() => _SystemControllsCardState();
 }
 
-class _PCControllsCardState extends State<PCControllsCard> {
+class _SystemControllsCardState extends State<SystemControllsCard> {
   Widget _buildIcon(Color color, IconData iconData) {
     return IconButton(
       iconSize: 100,

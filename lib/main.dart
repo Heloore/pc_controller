@@ -1,20 +1,21 @@
 import 'package:bottom_navy_bar/bottom_navy_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:pc_controll/modules/input_card.dart';
-import 'package:pc_controll/modules/pc_controlls_card.dart';
-import 'package:pc_controll/modules/settings_card.dart';
-import 'package:pc_controll/repository/repository.dart';
+import 'package:pc_controll/repositories/settings_repository.dart';
 
+import 'modules/input/screen/input_card.dart';
+import 'modules/settings/screen/settings_card.dart';
+import 'modules/system_controlls/screens/sys_controlls_card.dart';
 import 'modules/volume/screen/volume_card.dart';
 
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
+  // TODO: remove
   static final myTabbedPageKey = GlobalKey<_MyHomePageState>();
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'PC Controller',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -33,8 +34,13 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final PageController pageController = PageController();
-  Repository repository = Repository();
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    _checkSavedIPAddress();
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -42,7 +48,16 @@ class _MyHomePageState extends State<MyHomePage> {
     super.dispose();
   }
 
-  animateToPage(int page) {
+  // remove and create separate screen for settings
+  void _checkSavedIPAddress() async {
+    try {
+      await SettingsRepository().initAddressToController();
+      return;
+    } catch (_) {}
+    animateToPage(3);
+  }
+
+  void animateToPage(int page) {
     _currentIndex = page;
     pageController.animateToPage(
       page,
@@ -55,7 +70,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Nav Bar"),
+        title: Text(pages[_currentIndex].title),
         actions: _currentIndex == 3
             ? <Widget>[
                 IconButton(
@@ -80,25 +95,30 @@ class _MyHomePageState extends State<MyHomePage> {
           onPageChanged: (index) {
             setState(() => _currentIndex = index);
           },
-          children: <Widget>[
-            VolumeCard(),
-            InputCard(),
-            PCControllsCard(),
-            SettingsCard(),
-          ],
+          children: pages.map((pagesItem) => pagesItem.page).toList(),
         ),
       ),
       bottomNavigationBar: BottomNavyBar(
         key: MyApp.myTabbedPageKey,
         selectedIndex: _currentIndex,
         onItemSelected: animateToPage,
-        items: <BottomNavyBarItem>[
-          BottomNavyBarItem(title: Text('Volume'), icon: Icon(Icons.volume_up)),
-          BottomNavyBarItem(title: Text('Input'), icon: Icon(Icons.mouse)),
-          BottomNavyBarItem(title: Text('PC contolls'), icon: Icon(Icons.computer)),
-          BottomNavyBarItem(title: Text('Settings'), icon: Icon(Icons.settings)),
-        ],
+        items: pages.map((pagesItem) => pagesItem.bottomNavyBarItem).toList(),
       ),
     );
   }
+}
+
+List<PageControllerPage> pages = [
+  PageControllerPage("Volume", VolumeCard(), BottomNavyBarItem(title: Text("Volume"), icon: Icon(Icons.volume_up))),
+  PageControllerPage("Input", InputCard(), BottomNavyBarItem(title: Text("Input"), icon: Icon(Icons.mouse))),
+  PageControllerPage("Controlls", SystemControllsCard(), BottomNavyBarItem(title: Text("Controlls"), icon: Icon(Icons.computer))),
+  PageControllerPage("Settings", SettingsCard(), BottomNavyBarItem(title: Text("Settings"), icon: Icon(Icons.settings))),
+];
+
+class PageControllerPage {
+  final String title;
+  final Widget page;
+  final BottomNavyBarItem bottomNavyBarItem;
+
+  const PageControllerPage(this.title, this.page, this.bottomNavyBarItem);
 }

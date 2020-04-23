@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 
-/**
- * Steteful widget
- */
 class TouchPad extends StatefulWidget {
   final ValueChanged<Offset> onChanged;
 
@@ -43,7 +40,6 @@ class TouchPadState extends State<TouchPad> {
 
     print('x:$x:$width, y:$y:$height');
 
-    // Update state.
     setState(() {
       xPos = x - (width / 2);
       yPos = y - (height / 2);
@@ -106,8 +102,7 @@ class TouchPadPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(TouchPadPainter old) =>
-      position.dx != old.position.dx && position.dy != old.position.dy;
+  bool shouldRepaint(TouchPadPainter old) => position.dx != old.position.dx && position.dy != old.position.dy;
 }
 
 class TouchPadGridPainter extends CustomPainter {
@@ -135,6 +130,5 @@ class TouchPadGridPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(TouchPadGridPainter old) =>
-      position.dx != old.position.dx && position.dy != old.position.dy;
+  bool shouldRepaint(TouchPadGridPainter old) => position.dx != old.position.dx && position.dy != old.position.dy;
 }

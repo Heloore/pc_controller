@@ -1,19 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:outline_material_icons/outline_material_icons.dart';
-import 'package:pc_controll/connection_controller/connection.dart';
-import 'package:flutter/services.dart';
+import 'package:pc_controll/modules/settings/bloc/settings_bloc.dart';
 import 'package:qrscan/qrscan.dart';
 
-import '../main.dart';
+import '../../../main.dart';
 
+
+// TODO: create separate screen for settings
 class SettingsCard extends StatefulWidget {
   @override
   _SettingsCardState createState() => _SettingsCardState();
 }
 
 class _SettingsCardState extends State<SettingsCard> {
-  String _textValue = "";
+  final TextEditingController controller = TextEditingController();
+  final SettingsBloc bloc = SettingsBloc();
+
+  @override
+  void dispose() {
+    controller.dispose();
+    // bloc.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,13 +46,25 @@ class _SettingsCardState extends State<SettingsCard> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   Flexible(
-                    child: TextFormField(
-                      style: TextStyle(color: Colors.white, fontSize: 24),
-                      decoration: InputDecoration(hoverColor: Colors.white),
-                      cursorColor: Colors.white,
-                      initialValue: _textValue,
-                      onChanged: (String value) => _textValue = value,
-                    ),
+                    child: StreamBuilder<String>(
+                        // stream: bloc.addressStream.stream,
+                        builder: (context, snapshot) {
+                          String value;
+                          if (snapshot.hasData) {
+                            print(snapshot.data);
+                            value = snapshot.data;
+                          } else {
+                            print("no data");
+                          }
+                          return TextFormField(
+                            controller: controller,
+                            style: TextStyle(color: Colors.white, fontSize: 24),
+                            decoration: InputDecoration(hoverColor: Colors.white),
+                            cursorColor: Colors.white,
+                            // initialValue: value,
+                            // onChanged: (String value) => _textValue = value,
+                          );
+                        }),
                   ),
                   IconButton(
                     iconSize: 24,
@@ -54,7 +74,7 @@ class _SettingsCardState extends State<SettingsCard> {
                       Icons.save,
                     ),
                     onPressed: () async {
-                      await _setApiPath(_textValue);
+                      await _setApiPath(controller.text);
                     },
                   ),
                 ],
@@ -71,12 +91,9 @@ class _SettingsCardState extends State<SettingsCard> {
                 MdiIcons.qrcode,
               ),
               onPressed: () async {
-                var barcode = await scan();
-                if (barcode != null) {
-                  setState(() {
-                    _textValue = barcode;
-                  });
-                  await _setApiPath(barcode);
+                String qr = await scan();
+                if (qr != null) {
+                  await _setApiPath(qr);
                 }
               },
             ),
@@ -87,11 +104,10 @@ class _SettingsCardState extends State<SettingsCard> {
   }
 
   Future<void> _setApiPath(String address) async {
-    try {
-      await ConnectionController().setApiPath(address);
+    if (await bloc.saveNewAddress(address)) {
+      // TODO: remove
       MyApp.myTabbedPageKey.currentState.animateToPage(1);
-    } catch (e) {
-      print(e);
+    } else {
       _showSnackBar("IP address is incorrect");
     }
   }

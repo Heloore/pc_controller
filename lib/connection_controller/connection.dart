@@ -1,20 +1,21 @@
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
-import 'package:pc_controll/connection_controller/request.dart';
+import 'package:pc_controll/dto/requests/request.dart';
 
 class ConnectionController {
-  static String pcAddress = "";
+  String pcAddress = "";
   static final ConnectionController _controller = ConnectionController._();
 
   factory ConnectionController() => _controller;
   ConnectionController._();
 
-  Future<void> setApiPath(String ip) async {
-    if (await _chechAddress(ip)) {
-      pcAddress = ip;
+  Future<void> setApiPath(String address) async {
+    assert(address != null && address.isNotEmpty);
+    if (await _checkAddress(address)) {
+      pcAddress = address;
     } else {
-      throw ArgumentError("Invalid address");
+      throw ArgumentError("Can't establish connection");
     }
   }
 
@@ -40,11 +41,8 @@ class ConnectionController {
     return await http.post(pcAddress + path, body: body);
   }
 
-  Future<bool> _chechAddress(String address) async {
-    var addr = "http://" + address + "/check_connection";
-    print(addr);
-    var resp = await http.get(addr);
-    print(resp.statusCode);
+  Future<bool> _checkAddress(String address) async {
+    var resp = await http.get("http://" + address + "/check_connection");
     if (resp.statusCode == HttpStatus.ok) {
       return true;
     }
