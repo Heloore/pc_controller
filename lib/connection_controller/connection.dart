@@ -15,7 +15,7 @@ class ConnectionController {
     if (await _checkAddress(address)) {
       pcAddress = address;
     } else {
-      throw ArgumentError("Can't establish connection");
+      throw Exception("Can't establish connection");
     }
   }
 

@@ -1,45 +1,70 @@
 import 'dart:async';
 
-import 'package:bloc/bloc.dart';
-import 'package:pc_controll/modules/volume/bloc/volume_event.dart';
-import 'package:pc_controll/modules/volume/bloc/volume_state.dart';
+import 'package:pc_controll/dto/responses/volume_response.dart';
+import 'package:pc_controll/modules/volume/model/volume_model.dart';
 import 'package:pc_controll/repositories/volume_repository.dart';
 
+import 'package:rxdart/rxdart.dart';
 
-class VolumeBloc extends Bloc<VolumeEvent, VolumeState> {
+class VolumeBloc {
+  final BehaviorSubject<VolumeModel> _modelStream = BehaviorSubject<VolumeModel>();
+  Stream<VolumeModel> get modelStream => _modelStream.stream;
+
+  static const int maxVolume = 100;
+  static const int minVolume = 0;
+
   VolumeBloc() {
     getCurrentVolume();
   }
 
-  getCurrentVolume() async {
-  //  get volume level and sync UI
+  void dispose() {
+    _modelStream.close();
   }
 
-  @override
-  VolumeState get initialState => VolumeInitialState();
+  void getCurrentVolume() async {
+    VolumeReponse resp;
+    try {
+      resp = await VolumeRepository().getCurrentVolume();
+    } catch (e) {
+      _modelStream.sink.addError("Error fetching data. Please try again");
+      return;
+    }
+    _modelStream.sink.add(VolumeModel(resp.volume, resp.muted));
+  }
 
-  @override
-  Stream<VolumeState> mapEventToState(VolumeEvent event) async* {
-    if (event is VolumeMuteEvent) {
-      try {
-        if (await VolumeRepository().muteVolume()) {
-          yield VolumeMuted(state.volumeLevel);
-        }
-      } catch (_) {}
-    } else if (event is VolumeUnmuteEvent) {
-      try {
-        if (await VolumeRepository().unmuteVolume()) {
-          yield VolumeSet(state.volumeLevel);
-        }
-      } catch (_) {
-      }
-    } else if (event is VolumeSetEvent) {
-      try {
-        await VolumeRepository().setVolumeLevel(event.volumeLevel);
-      } catch (_) {
-      }
-    } else {
-      throw Exception('unhandled event: $event');
+  void setVolumeLevel(int volume) async {
+    bool resp;
+    try {
+      resp = await VolumeRepository().setVolumeLevel(volume);
+    } catch (_) {
+      return;
+    }
+    if (resp) {
+      _modelStream.sink.add(VolumeModel(volume, _modelStream.stream.value.muted));
+    }
+  }
+
+  void muteVolume() async {
+    bool resp;
+    try {
+      resp = await VolumeRepository().muteVolume();
+    } catch (_) {
+      return;
+    }
+    if (resp) {
+      _modelStream.sink.add(VolumeModel(_modelStream.stream.value.volume, true));
+    }
+  }
+
+  void unmuteVolume() async {
+    bool resp;
+    try {
+      resp = await VolumeRepository().unmuteVolume();
+    } catch (_) {
+      return;
+    }
+    if (resp) {
+      _modelStream.sink.add(VolumeModel(_modelStream.stream.value.volume, false));
     }
   }
 }
